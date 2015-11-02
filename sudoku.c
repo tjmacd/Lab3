@@ -107,10 +107,34 @@ void* validateRows (void* arg) {
 	return NULL;
 }
 
+int validateGrid (struct sudoku *sudoku, int row, int column) {
+	int index = 1;
+
+	for (int k = 0; k < 9; k++) {
+		for (int i = row; i < row+3; i++) {
+			for (int j = column; j < column+3; j++) {
+				if (sudoku->puzzle[i][j] == (index+'0')) {
+					index++;
+					break;
+				}
+			}
+		}
+	}
+	if (index == 10) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 void* validateGrids (void* arg) {
 	struct sudoku *sudoku = (struct sudoku*) arg;
 
-	
+	for (int i = 0; i < 9; i+=3) {
+		for (int j = 0; j < 9; j+=3) {
+			sudoku->gridFlags[i+j/3] = validateGrid(sudoku, i, j);
+		}
+	}
 
 	return NULL;
 }
