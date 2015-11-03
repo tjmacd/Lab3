@@ -13,26 +13,26 @@ struct sudoku {
 
 void printSudoku (struct sudoku *sudoku) {
 	printf("Puzzle:\n");
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			printf("%c ", sudoku->puzzle[i][j]);
+	for (int row = 0; row < 9; row++) {
+		for (int col = 0; col < 9; col++) {
+			printf("%c ", sudoku->puzzle[row][col]);
 		}
 		printf ("\n");
 	}
 
 	printf("\nColumn flags:\n");
-	for (int i = 0; i < 9; i++) {
-		printf("%d ", sudoku->columnFlags[i]);
+	for (int col = 0; col < 9; col++) {
+		printf("%d ", sudoku->columnFlags[col]);
 	}
 
 	printf("\nRow flags:\n");
-	for (int i = 0; i < 9; i++) {
-		printf("%d ", sudoku->rowFlags[i]);
+	for (int row = 0; row < 9; row++) {
+		printf("%d ", sudoku->rowFlags[row]);
 	}
 
 	printf("\nGrid flags:\n");
-	for (int i = 0; i < 9; i++) {
-		printf("%d ", sudoku->gridFlags[i]);
+	for (int grid = 0; grid < 9; grid++) {
+		printf("%d ", sudoku->gridFlags[grid]);
 	}
 	printf("\n");
 }
@@ -43,11 +43,11 @@ void readInPuzzle (struct sudoku *sudoku) {
 		char line[19]; // length 19 in order to hold 9 chars, 9 spaces, and 1 newline character
 		int lineSize = (sizeof(line) / sizeof(line[0])); // get lineSize
 
-		for (int i = 0; i < 9; i++) { // loop for each row of the puzzle
+		for (int row = 0; row < 9; row++) { // loop for each row of the puzzle
 			if(fgets(line, lineSize, file) != NULL) {
 				 // loop for every-other value in the line, starting from 0
-				for (int j = 0; j < lineSize-2; j+=2) { // use lineSize-2 as end to eliminate newline char
-					sudoku->puzzle[i][j/2] = line[j];
+				for (int col = 0; col < lineSize-2; col+=2) { // use lineSize-2 as end to eliminate newline char
+					sudoku->puzzle[row][col/2] = line[col];
 				}
 			}
 		}
@@ -59,22 +59,22 @@ void* validateColumns (void* arg) {
 	struct sudoku *sudoku = (struct sudoku*) arg;
 
 	// for each column
-	for (int i = 0; i < 9; i++) {
-		int index = 1;
+	for (int col = 0; col < 9; col++) {
+		int value = 1;
 		// repeat search 9 times
 		for (int j = 0; j < 9; j++) {
 			// for each row in the column
-			for (int k = 0; k < 9; k++) {
-				if (sudoku->puzzle[k][i] == (index+'0')) {
-					index++;
+			for (int row = 0; row < 9; row++) {
+				if (sudoku->puzzle[row][col] == (value+'0')) {
+					value++;
 					break;
 				}
 			}
 		}
-		if (index == 10) { // if 1-9 was found in the column
-			sudoku->columnFlags[i] = 1; // set flag to 1
+		if (value == 10) { // if 1-9 was found in the column
+			sudoku->columnFlags[col] = 1; // set flag to 1
 		} else {
-			sudoku->columnFlags[i] = 0; // else set flag to 0
+			sudoku->columnFlags[col] = 0; // else set flag to 0
 		}
 	}
 
@@ -84,43 +84,43 @@ void* validateColumns (void* arg) {
 void* validateRows (void* arg) {
 	struct sudoku *sudoku = (struct sudoku*) arg;
 
-	// for each column
-	for (int i = 0; i < 9; i++) {
-		int index = 1;
+	// for each row
+	for (int row = 0; row < 9; row++) {
+		int value = 1;
 		// repeat search 9 times
 		for (int j = 0; j < 9; j++) {
-			// for each row in the column
-			for (int k = 0; k < 9; k++) {
-				if (sudoku->puzzle[i][k] == (index+'0')) {
-					index++;
+			// for each column in the row
+			for (int col = 0; col < 9; col++) {
+				if (sudoku->puzzle[row][col] == (value+'0')) {
+					value++;
 					break;
 				}
 			}
 		}
-		if (index == 10) { // if 1-9 was found in the column
-			sudoku->rowFlags[i] = 1; // set flag to 1
+		if (value == 10) { // if 1-9 was found in the column
+			sudoku->rowFlags[row] = 1; // set flag to 1
 		} else {
-			sudoku->rowFlags[i] = 0; // else set flag to 0
+			sudoku->rowFlags[row] = 0; // else set flag to 0
 		}
 	}
 
 	return NULL;
 }
 
-int validateGrid (struct sudoku *sudoku, int row, int column) {
-	int index = 1;
+int validateGrid (struct sudoku *sudoku, int rowNum, int column) {
+	int value = 1;
 
 	for (int k = 0; k < 9; k++) {
-		for (int i = row; i < row+3; i++) {
-			for (int j = column; j < column+3; j++) {
-				if (sudoku->puzzle[i][j] == (index+'0')) {
-					index++;
+		for (int row = rowNum; row < rowNum+3; row++) {
+			for (int col = column; col < column+3; col++) {
+				if (sudoku->puzzle[row][col] == (value+'0')) {
+					value++;
 					break;
 				}
 			}
 		}
 	}
-	if (index == 10) {
+	if (value == 10) {
 		return 1;
 	} else {
 		return 0;
@@ -130,9 +130,9 @@ int validateGrid (struct sudoku *sudoku, int row, int column) {
 void* validateGrids (void* arg) {
 	struct sudoku *sudoku = (struct sudoku*) arg;
 
-	for (int i = 0; i < 9; i+=3) {
-		for (int j = 0; j < 9; j+=3) {
-			sudoku->gridFlags[i+j/3] = validateGrid(sudoku, i, j);
+	for (int row = 0; row < 9; row+=3) {
+		for (int col = 0; col < 9; col+=3) {
+			sudoku->gridFlags[row+col/3] = validateGrid(sudoku, row, col);
 		}
 	}
 
@@ -158,7 +158,7 @@ int main (void) {
 	pthread_join(rows, NULL);
 	pthread_join(grids, NULL);
 
-	printSudoku(sudoku);
+	//printSudoku(sudoku);
 
 	free(sudoku); // free memory
 }
