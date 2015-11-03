@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <pthread.h>
 #define BUFFER_LEN 256
-#define PUZZLETXT "validPuzzle.txt"
 
 struct sudoku {
 	char puzzle[9][9];
@@ -37,8 +36,8 @@ void printSudoku (struct sudoku *sudoku) {
 	printf("\n");
 }
 
-void readInPuzzle (struct sudoku *sudoku) {
-	FILE *file = fopen(PUZZLETXT, "r"); // open puzzle.txt for reading
+void readInSudoku (struct sudoku *sudoku, char fileName[]) {
+	FILE *file = fopen(fileName, "r"); // open puzzle.txt for reading
 	if (file != NULL) {
 		char line[19]; // length 19 in order to hold 9 chars, 9 spaces, and 1 newline character
 		int lineSize = (sizeof(line) / sizeof(line[0])); // get lineSize
@@ -51,6 +50,8 @@ void readInPuzzle (struct sudoku *sudoku) {
 				}
 			}
 		}
+	} else {
+		printf("Could not open file\n");
 	}
 	fclose(file);
 }
@@ -139,15 +140,8 @@ void* validateGrids (void* arg) {
 	return NULL;
 }
 
-int main (void) {
-	// variable declaration
-	struct sudoku *sudoku;
+void validateSudoku (struct sudoku *sudoku) {
 	pthread_t columns, rows, grids;
-
-	// intitialize sudoku
-	sudoku = calloc (108, sizeof(char));
-
-	readInPuzzle(sudoku); // read in puzzle and store in sudoku
 
 	// create threads and execute thread functions
 	pthread_create(&columns, NULL, validateColumns, (void *) sudoku);
@@ -157,8 +151,55 @@ int main (void) {
 	pthread_join(columns, NULL);
 	pthread_join(rows, NULL);
 	pthread_join(grids, NULL);
+}
 
-	//printSudoku(sudoku);
+int isGridFull (char puzzle[][], int row, int col) {
+	for (int row = 0; row < 9; row+=3) {
+		for (int col = 0; col < 9; col+=3) {
+			if (puzzle[row][col] == 0)
+				return 0;
+		}
+	}
+	return 1;
+}
+
+int isAvailable (char puzzle[][], int row, int col, int value) {
+	for (int i = 0; i < 9; i++) {
+		if (puzzle[row][i] == (value+'0'))
+			return 0;
+		else if (puzzle[i][col] == (value+'0'))
+			return 0
+		/*-----TODO: Check for all values in the grid-----*/
+	}
+	return 1;
+}
+
+void solveSudoku (struct sudoku *sudoku) {
+	// create copy of the puzzle in sudoku
+	char puzzle[9][9];
+	for (int row = 0; row < 9; row++) {
+		for (int col = 0; col < 9; col++) {
+			puzzle[row][col] = sudoku->puzzle[row][col];
+		}
+	}
+
+	int value = 1, row = 0, col = 0;
+	/*-----TODO: Implement algorithm-----*/
+	if (!isGridFull(puzzle, row, col)) {
+
+	}
+}
+
+int main (void) {
+	// variable declaration
+	struct sudoku *sudoku;
+	// intitialize sudoku
+	sudoku = calloc (108, sizeof(char));
+
+	readInSudoku(sudoku, "puzzle.txt"); // read in puzzle and store in sudoku
+	solveSudoku(sudoku);
+	validateSudoku(sudoku);
+	printSudoku(sudoku);
 
 	free(sudoku); // free memory
 }
