@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include "sudoku.h"
 #define BUFFER_LEN 256
 
 
@@ -11,7 +12,7 @@ int rowFlags[9];
 int gridFlags[9];
 bool is_filled = false;
 
-void solve_square(int row, int col);
+
 
 
 void printSudoku () {
