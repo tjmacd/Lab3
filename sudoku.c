@@ -20,27 +20,11 @@ bool is_filled = false;
 
 // Prints the sudoku to the console
 void printSudoku () {
-	printf("Puzzle:\n");
 	for (int row = 0; row < 9; row++) {
 		for (int col = 0; col < 9; col++) {
 			printf("%d ", puzzle[row][col]);
 		}
 		printf ("\n");
-	}
-
-	printf("\nColumn flags:\n");
-	for (int col = 0; col < 9; col++) {
-		printf("%d ", columnFlags[col]);
-	}
-
-	printf("\nRow flags:\n");
-	for (int row = 0; row < 9; row++) {
-		printf("%d ", rowFlags[row]);
-	}
-
-	printf("\nGrid flags:\n");
-	for (int grid = 0; grid < 9; grid++) {
-		printf("%d ", gridFlags[grid]);
 	}
 	printf("\n");
 }
@@ -87,23 +71,21 @@ void readInSudoku (char fileName[]) {
 
 // Check that columns fit the sudoku constraints
 void* validateColumns (void* arg) {
-	// for each column
-	for (int col = 0; col < 9; col++) {
-		int value = 1;
-		// repeat search 9 times
-		for (int j = 0; j < 9; j++) {
-			// for each row in the column
-			for (int row = 0; row < 9; row++) {
-				if (puzzle[row][col] == value) {
-					value++;
-					break;
-				}
+	
+	for(int col = 0; col < 9; col++){
+		int counts[9] = {0};
+		for(int row = 0; row < 9; row++){
+			if(puzzle[row][col] != 0){
+				counts[puzzle[row][col]-1] += 1;
 			}
 		}
-		if (value == 10) { // if 1-9 was found in the column
-			columnFlags[col] = 1; // set flag to 1
-		} else {
-			columnFlags[col] = 0; // else set flag to 0
+
+		columnFlags[col] = 1;
+		for(int i = 0; i < 9; i++){
+			if(counts[i] > 1){
+				columnFlags[col] = 0;
+				break;
+			}
 		}
 	}
 	return NULL;
@@ -111,23 +93,20 @@ void* validateColumns (void* arg) {
 
 // Check that rows obey the sudoku constraints
 void* validateRows (void* arg) {
-	// for each row
-	for (int row = 0; row < 9; row++) {
-		int value = 1;
-		// repeat search 9 times
-		for (int j = 0; j < 9; j++) {
-			// for each column in the row
-			for (int col = 0; col < 9; col++) {
-				if (puzzle[row][col] == value) {
-					value++;
-					break;
-				}
+	for(int row = 0; row < 9; row++){
+		int counts[9] = {0};
+		for(int col = 0; col < 9; col++){
+			if(puzzle[row][col] != 0){
+				counts[puzzle[row][col]-1] += 1;
 			}
 		}
-		if (value == 10) { // if 1-9 was found in the column
-			rowFlags[row] = 1; // set flag to 1
-		} else {
-			rowFlags[row] = 0; // else set flag to 0
+
+		rowFlags[row] = 1;
+		for(int i = 0; i < 9; i++){
+			if(counts[i] > 1){
+				rowFlags[row] = 0;
+				break;
+			}
 		}
 	}
 	return NULL;
@@ -135,23 +114,20 @@ void* validateRows (void* arg) {
 
 // Check that grid obeys sudoku constraints
 int validateGrid (int rowNum, int column) {
-	int value = 1;
-
-	for (int k = 0; k < 9; k++) {
-		for (int row = rowNum; row < rowNum+3; row++) {
-			for (int col = column; col < column+3; col++) {
-				if (puzzle[row][col] == value) {
-					value++;
-					break;
-				}
+	int counts[9] = {0};
+	for(int row = rowNum; row < rowNum+3; row++){
+		for(int col = column; col < column+3; col++){
+			if(puzzle[row][col] != 0){
+				counts[puzzle[row][col]-1] += 1;
 			}
 		}
 	}
-	if (value == 10) {
-		return 1;
-	} else {
-		return 0;
+	for(int i = 0; i < 9; i++){
+		if(counts[i] > 1){
+			return 0;
+		}
 	}
+	return 1;
 }
 
 // Check that all grids obey sudoku constraints
@@ -178,43 +154,6 @@ void validateSudoku () {
 	pthread_join(grids, NULL);
 }
 
-// Checks if num can be inserted in row
-int check_row(int row, int num)
-{
-	for (int col=0; col < 9; col++){
-		if(puzzle[row][col]==num){
-			return 0; //number is already in row
-		}
-	}
-	return 1; //Number is not found in row
-}
-
-// Checks if num can be inserted in col
-int check_col(int col, int num){
-	for(int row=0; row < 9; row++){
-		if(puzzle[row][col]==num){
-			return 0; //Number is already in column
-		}
-	}
-	return 1; //Number is not in column
-}
-
-//Checks if we can put the number in the 3*3 grid
-//Takes the starting row and col
-int check_grid(int row, int col, int num)
-{
-	row=(row/3)*3;
-	col=(col/3)*3;
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			if(puzzle[row+i][col+j]==num){
-				return 0; //Number is already in grid
-			}
-		}
-	}
-	return 1; //Number is not yet in grid
-}
-
 //Move to the next cell if we have filled one cell
 void navigate(int row, int col)
 {
@@ -227,35 +166,54 @@ void navigate(int row, int col)
 // Solve the sudoku using backtracking algorithm, start at 0, 0
 void solve_square(int row, int col)
 {
+
 	if(row>8){
 		is_filled = true;
+		return;
 	}
 	if(puzzle[row][col] != 0){
 		navigate(row, col);
 	} else {
 		for(int i = 1; i <= 9; i++){
-			if((check_row(row,i)==1) && (check_col(col,i)==1) &&
-				check_grid(row, col, i)==1){
-				puzzle[row][col] = i;
+			puzzle[row][col] = i;
+			validateSudoku();
+			if(columnFlags[col] != 1 || rowFlags[row] != 1 
+				|| gridFlags[(row/3)*3+col/3] != 1){
+				puzzle[row][col] = 0;
+			} else {
 				navigate(row, col);
 			}
+			if(is_filled)
+				return;
 		}
-		if(!is_filled)
-			//No valid number found, backtrack
-			puzzle[row][col] = 0;
+		//No valid number found, backtrack
+		puzzle[row][col] = 0;
 	}
 }
 
 int main (void) {
-	// variable declaration
-	//struct sudoku *sudoku;
-	// intitialize sudoku
-	//sudoku = calloc (108, sizeof(int));
-
 	readInSudoku("puzzle.txt"); // read in puzzle and store in sudoku
-	solve_square(0,0);
+	//Check that puzzle is valid
 	validateSudoku();
-	printSudoku();
-
-	//free(sudoku); // free memory
+	bool valid = true;
+	for(int i = 0; i < 9; i++){
+		if(columnFlags[i] == 0 || rowFlags[i] == 0 || gridFlags[i] == 0){
+			valid = false;
+			break;
+		}
+	}
+	if(valid){
+		puts("Unsolved Puzzle:");
+		printSudoku();
+		solve_square(0,0);
+		if(is_filled){
+			puts("Solved Puzzle:");
+			printSudoku();
+			writeToFile("solution.txt");
+		} else {
+			puts("Sudoku puzzle is unsolvable.");
+		}
+	} else {
+		puts("Puzzle is not a valid sudoku.");
+	}
 }
