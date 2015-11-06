@@ -8,11 +8,11 @@
 extern void printSudoku ();
 extern void writeToFile (char fileName[]);
 extern void readInSudoku (char fileName[]);
-extern void* validateColumns (void* arg);
-extern void* validateRows (void* arg);
+extern void* validateColumns ();
+extern void* validateRows ();
 extern int validateGrid (int rowNum, int column);
-extern void* validateGrids (void* arg);
-extern void validateSudoku ();
+extern void* validateGrids ();
+extern int validateSudoku ();
 extern int check_row(int row, int num);
 extern int check_col(int col, int num);
 extern int check_grid(int row, int col, int num);
