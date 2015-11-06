@@ -6,6 +6,7 @@
  * 
  */
 extern void printSudoku ();
+extern void writeToFile (char fileName[]);
 extern void readInSudoku (char fileName[]);
 extern void* validateColumns (void* arg);
 extern void* validateRows (void* arg);
