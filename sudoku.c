@@ -40,7 +40,7 @@ void printSudoku () {
 	printf("\n");
 }
 
-void writeToFile (int puzzle[9][9], char fileName[]) {
+void writeToFile (char fileName[]) {
 	FILE *file = fopen(fileName, "w");
 
 	if (file != NULL) {
