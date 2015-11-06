@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Wall -Wextra -std=c99 -pthread
+CFLAGS = -Wall -Wextra -std=c99 -lpthread
 LFLAGS = 
-LIBS = -lm -pthreads
+LIBS =
 SOURCES = sudoku.c
 OBJECTS = $(subst .c,.o,$(SOURCES))
 EXE = sudoku
