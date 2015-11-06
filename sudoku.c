@@ -1,3 +1,10 @@
+/*
+ * Sudoku Solver for SOFE 3950U / CSCI 3020U: Operating Systems
+ *
+ * Copyright (C) 2015, Muhammad Ahmad, Timothy MacDougall, Devin Westbye
+ * All rights reserved.
+ * 
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -5,16 +12,13 @@
 #include "sudoku.h"
 #define BUFFER_LEN 256
 
-
 int puzzle[9][9];
 int columnFlags[9];
 int rowFlags[9];
 int gridFlags[9];
 bool is_filled = false;
 
-
-
-
+// Prints the sudoku to the console
 void printSudoku () {
 	printf("Puzzle:\n");
 	for (int row = 0; row < 9; row++) {
@@ -41,6 +45,7 @@ void printSudoku () {
 	printf("\n");
 }
 
+// Writes the sudoku to the given file
 void writeToFile (char fileName[]) {
 	FILE *file = fopen(fileName, "w");
 
@@ -48,11 +53,15 @@ void writeToFile (char fileName[]) {
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				if (j != 8)
-					fprintf(file, "%d ", puzzle[i][j]); // print int with space
+					// print int with space
+					fprintf(file, "%d ", puzzle[i][j]); 
 				else
-					fprintf(file, "%d", puzzle[i][j]); // print int without space for last value in line
+				// print int without space for last value in line
+					fprintf(file, "%d", puzzle[i][j]); 
 			}
-			fprintf(file, "\n"); // print newline in file after 9 values have been written on a line
+			// print newline in file after 9 values have been 
+			// written on a line
+			fprintf(file, "\n"); 
 		}
 	} else {
 		printf("File: %s could not be opened for writing", fileName);
@@ -60,21 +69,15 @@ void writeToFile (char fileName[]) {
 	}
 }
 
+// Reads sudoku from given file
 void readInSudoku (char fileName[]) {
-	FILE *file = fopen(fileName, "r"); // open puzzle.txt for reading
+	// open puzzle.txt for reading
+	FILE *file = fopen(fileName, "r"); 
 	if (file != NULL) {
-		//char line[19]; // length 19 in order to hold 9 chars, 9 spaces, and 1 newline character
-		//int lineSize = (sizeof(line) / sizeof(line[0])); // get lineSize
-
-		for (int row = 0; row < 9; row++) { // loop for each row of the puzzle
-			//if(fscanf(line, lineSize, file) != NULL) {
-				 // loop for every-other value in the line, starting from 0
-				for (int col = 0; col < 9; col++) { // use lineSize-2 as end to eliminate newline char
-					fscanf(file, "%d ", &puzzle[row][col]);
-					//printf("%d\n", puzzle[row][col]);
-					//sudoku->puzzle[row][col/2] = line[col];
-				}
-			//}
+		for (int row = 0; row < 9; row++) { // loop for each row 
+			for (int col = 0; col < 9; col++) {
+				fscanf(file, "%d ", &puzzle[row][col]);
+			}
 		}
 	} else {
 		printf("Could not open file\n");
@@ -82,9 +85,8 @@ void readInSudoku (char fileName[]) {
 	fclose(file);
 }
 
+// Check that columns fit the sudoku constraints
 void* validateColumns (void* arg) {
-	//struct sudoku *sudoku = (struct sudoku*) arg;
-
 	// for each column
 	for (int col = 0; col < 9; col++) {
 		int value = 1;
@@ -104,13 +106,11 @@ void* validateColumns (void* arg) {
 			columnFlags[col] = 0; // else set flag to 0
 		}
 	}
-
 	return NULL;
 }
 
+// Check that rows obey the sudoku constraints
 void* validateRows (void* arg) {
-	//struct sudoku *sudoku = (struct sudoku*) arg;
-
 	// for each row
 	for (int row = 0; row < 9; row++) {
 		int value = 1;
@@ -130,10 +130,10 @@ void* validateRows (void* arg) {
 			rowFlags[row] = 0; // else set flag to 0
 		}
 	}
-
 	return NULL;
 }
 
+// Check that grid obeys sudoku constraints
 int validateGrid (int rowNum, int column) {
 	int value = 1;
 
@@ -154,18 +154,17 @@ int validateGrid (int rowNum, int column) {
 	}
 }
 
+// Check that all grids obey sudoku constraints
 void* validateGrids (void* arg) {
-	//struct sudoku *sudoku = (struct sudoku*) arg;
-
 	for (int row = 0; row < 9; row+=3) {
 		for (int col = 0; col < 9; col+=3) {
 			gridFlags[row+col/3] = validateGrid(row, col);
 		}
 	}
-
 	return NULL;
 }
 
+// Check that the sudoku is correct
 void validateSudoku () {
 	pthread_t columns, rows, grids;
 
@@ -179,6 +178,7 @@ void validateSudoku () {
 	pthread_join(grids, NULL);
 }
 
+// Checks if num can be inserted in row
 int check_row(int row, int num)
 {
 	for (int col=0; col < 9; col++){
@@ -189,6 +189,7 @@ int check_row(int row, int num)
 	return 1; //Number is not found in row
 }
 
+// Checks if num can be inserted in col
 int check_col(int col, int num){
 	for(int row=0; row < 9; row++){
 		if(puzzle[row][col]==num){
@@ -214,8 +215,6 @@ int check_grid(int row, int col, int num)
 	return 1; //Number is not yet in grid
 }
 
-
-
 //Move to the next cell if we have filled one cell
 void navigate(int row, int col)
 {
@@ -225,16 +224,12 @@ void navigate(int row, int col)
 		solve_square(row+1, 0);
 }
 
+// Solve the sudoku using backtracking algorithm, start at 0, 0
 void solve_square(int row, int col)
 {
-	//sleep(1);
 	if(row>8){
-		//sudoku is filled
-		//printSudoku();
-		//printf("%d\n", puzzle[0][2]);
 		is_filled = true;
 	}
-	//int finished=0;
 	if(puzzle[row][col] != 0){
 		navigate(row, col);
 	} else {
@@ -246,7 +241,8 @@ void solve_square(int row, int col)
 			}
 		}
 		if(!is_filled)
-			puzzle[row][col] = 0;//No valid number found
+			//No valid number found, backtrack
+			puzzle[row][col] = 0;
 	}
 }
 
@@ -257,7 +253,6 @@ int main (void) {
 	//sudoku = calloc (108, sizeof(int));
 
 	readInSudoku("puzzle.txt"); // read in puzzle and store in sudoku
-	//solveSudoku(sudoku);
 	solve_square(0,0);
 	validateSudoku();
 	printSudoku();
