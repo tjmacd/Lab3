@@ -40,6 +40,25 @@ void printSudoku () {
 	printf("\n");
 }
 
+void writeToFile (int puzzle[9][9], char fileName[]) {
+	FILE *file = fopen(fileName, "w");
+
+	if (file != NULL) {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if (j != 8)
+					fprintf(file, "%d ", puzzle[i][j]); // print int with space
+				else
+					fprintf(file, "%d", puzzle[i][j]); // print int without space for last value in line
+			}
+			fprintf(file, "\n"); // print newline in file after 9 values have been written on a line
+		}
+	} else {
+		printf("File: %s could not be opened for writing", fileName);
+		return;
+	}
+}
+
 void readInSudoku (char fileName[]) {
 	FILE *file = fopen(fileName, "r"); // open puzzle.txt for reading
 	if (file != NULL) {
