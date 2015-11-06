@@ -70,8 +70,7 @@ void readInSudoku (char fileName[]) {
 }
 
 // Check that columns fit the sudoku constraints
-void* validateColumns (void* arg) {
-	
+void* validateColumns () {
 	for(int col = 0; col < 9; col++){
 		int counts[9] = {0};
 		for(int row = 0; row < 9; row++){
@@ -79,7 +78,6 @@ void* validateColumns (void* arg) {
 				counts[puzzle[row][col]-1] += 1;
 			}
 		}
-
 		columnFlags[col] = 1;
 		for(int i = 0; i < 9; i++){
 			if(counts[i] > 1){
@@ -92,7 +90,7 @@ void* validateColumns (void* arg) {
 }
 
 // Check that rows obey the sudoku constraints
-void* validateRows (void* arg) {
+void* validateRows () {
 	for(int row = 0; row < 9; row++){
 		int counts[9] = {0};
 		for(int col = 0; col < 9; col++){
@@ -100,7 +98,6 @@ void* validateRows (void* arg) {
 				counts[puzzle[row][col]-1] += 1;
 			}
 		}
-
 		rowFlags[row] = 1;
 		for(int i = 0; i < 9; i++){
 			if(counts[i] > 1){
@@ -131,7 +128,7 @@ int validateGrid (int rowNum, int column) {
 }
 
 // Check that all grids obey sudoku constraints
-void* validateGrids (void* arg) {
+void* validateGrids () {
 	for (int row = 0; row < 9; row+=3) {
 		for (int col = 0; col < 9; col+=3) {
 			gridFlags[row+col/3] = validateGrid(row, col);
@@ -141,7 +138,7 @@ void* validateGrids (void* arg) {
 }
 
 // Check that the sudoku is correct
-void validateSudoku () {
+int validateSudoku () {
 	pthread_t columns, rows, grids;
 
 	// create threads and execute thread functions
@@ -152,6 +149,16 @@ void validateSudoku () {
 	pthread_join(columns, NULL);
 	pthread_join(rows, NULL);
 	pthread_join(grids, NULL);
+
+	for (int i = 0; i < 9; i++) {
+		if (columnFlags[i] == 0)
+			return 0;
+		if (rowFlags[i] == 0)
+			return 0;
+		if (gridFlags[i] == 0)
+			return 0;
+	}
+	return 1;
 }
 
 //Move to the next cell if we have filled one cell
@@ -164,9 +171,7 @@ void navigate(int row, int col)
 }
 
 // Solve the sudoku using backtracking algorithm, start at 0, 0
-void solve_square(int row, int col)
-{
-
+void solve_square(int row, int col) {
 	if(row>8){
 		is_filled = true;
 		return;
