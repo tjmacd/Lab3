@@ -9,6 +9,7 @@ int puzzle[9][9];
 int columnFlags[9];
 int rowFlags[9];
 int gridFlags[9];
+bool is_filled = false;
 
 void solve_square(int row, int col);
 
@@ -71,7 +72,7 @@ void* validateColumns (void* arg) {
 		for (int j = 0; j < 9; j++) {
 			// for each row in the column
 			for (int row = 0; row < 9; row++) {
-				if (puzzle[row][col] == (value)) {
+				if (puzzle[row][col] == value) {
 					value++;
 					break;
 				}
@@ -97,7 +98,7 @@ void* validateRows (void* arg) {
 		for (int j = 0; j < 9; j++) {
 			// for each column in the row
 			for (int col = 0; col < 9; col++) {
-				if (puzzle[row][col] == (value+'0')) {
+				if (puzzle[row][col] == value) {
 					value++;
 					break;
 				}
@@ -119,7 +120,7 @@ int validateGrid (int rowNum, int column) {
 	for (int k = 0; k < 9; k++) {
 		for (int row = rowNum; row < rowNum+3; row++) {
 			for (int col = column; col < column+3; col++) {
-				if (puzzle[row][col] == (value+'0')) {
+				if (puzzle[row][col] == value) {
 					value++;
 					break;
 				}
@@ -206,13 +207,14 @@ void navigate(int row, int col)
 
 void solve_square(int row, int col)
 {
+	//sleep(1);
 	if(row>8){
 		//sudoku is filled
-		printSudoku();
-		printf("%d\n", puzzle[0][2]);
-		
-		return;
+		//printSudoku();
+		//printf("%d\n", puzzle[0][2]);
+		is_filled = true;
 	}
+	//int finished=0;
 	if(puzzle[row][col] != 0){
 		navigate(row, col);
 	} else {
@@ -223,7 +225,8 @@ void solve_square(int row, int col)
 				navigate(row, col);
 			}
 		}
-		puzzle[row][col] = 0;//No valid number found
+		if(!is_filled)
+			puzzle[row][col] = 0;//No valid number found
 	}
 }
 
@@ -236,8 +239,7 @@ int main (void) {
 	readInSudoku("puzzle.txt"); // read in puzzle and store in sudoku
 	//solveSudoku(sudoku);
 	solve_square(0,0);
-	printf("%d\n", puzzle[0][2]);
-	//validateSudoku();
+	validateSudoku();
 	printSudoku();
 
 	//free(sudoku); // free memory
